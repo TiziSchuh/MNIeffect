@@ -1,4 +1,4 @@
-# ExpectedResponseDifference
+# MNIeffect
 
 Source Code for the Illustration in:
 
