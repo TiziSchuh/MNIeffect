@@ -1,14 +1,19 @@
+# computation based on:
+# 
+# Schuhbeck, T. M. B., Sterner, P., & Goretzko, D. (2026). 
+# Quantifying Measurement Non-Invariance Beyond Simple Structure: 
+# The Closed Formulas of Universal Effect Size Measures for MI. 
+# Structural Equation Modeling: A Multidisciplinary Journal, 33(1), 81-88.
 #
+# ===================================================
+
+library(pracma) # erf() needed in \code(exp_response_diff)
+
+
 # nu: intercept
 # lambda: loading(-vector)
 # alpha: latent mean(-vector)
 # psi: latent variance(/covariance matrix)
-#
-# ===================================================
-
-
-library(pracma) # erf() needed in \code(exp_response_diff)
-
 
 exp_response_diff <- function(nu, lambda, nu_g, lambda_g, alpha_g, psi_g,
                               difference = "absolute", responseType = "item") {
