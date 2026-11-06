@@ -1,7 +1,7 @@
 source("R/FA_functions.R")
 
 # ------------------------------------------------------------------------------------------------------
-# one factor
+# one normally distibuted factor 
 
 nu <- 0
 lambda <- .72

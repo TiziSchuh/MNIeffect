@@ -1,7 +1,7 @@
 source("R/FA_functions.R")
 
 # ------------------------------------------------------------------------------------------------------
-# three items, one factor
+# three items, one normally distibuted factor 
 
 nu <- c(0, 0, 0)
 lambda <- c(.5, .6, .7)
