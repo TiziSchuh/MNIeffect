@@ -15,13 +15,13 @@ RESDitem(nu, lambda, nu_g, lambda_g, alpha_g, psi_g)
 
 # test: compare to numerically approximated integral
 
-D <- function(theta) {
+diff <- function(theta) {
   out <- ((nu_g + lambda_g*theta) - (nu + lambda*theta)) * dnorm(theta, mean=alpha_g, sd=sqrt(psi_g))
 }
-AD <- function(theta) {
+diff_abs <- function(theta) {
   out <- abs((nu_g + lambda_g*theta) - (nu + lambda*theta)) * dnorm(theta, mean=alpha_g, sd=sqrt(psi_g))
 }
-SD <- function(theta) {
+diff_sqr <- function(theta) {
   out <- ((nu_g + lambda_g*theta) - (nu + lambda*theta))^2 * dnorm(theta, mean=alpha_g, sd=sqrt(psi_g))
 }
 
@@ -31,9 +31,9 @@ summary <- data.frame(
     EADitem(nu, lambda, nu_g, lambda_g, alpha_g, psi_g),
     RESDitem(nu, lambda, nu_g, lambda_g, alpha_g, psi_g)),
   numerical = c(
-    integrate(D, lower = -10, upper = 10)$value,
-    integrate(AD, lower = -10, upper = 10)$value,
-    sqrt(integrate(SD, lower = -10, upper = 10)$value) 
+    integrate(diff, lower = -10, upper = 10)$value,
+    integrate(diff_abs, lower = -10, upper = 10)$value,
+    sqrt(integrate(diff_sqr, lower = -10, upper = 10)$value) 
   ),
   stringsAsFactors = FALSE
 )
