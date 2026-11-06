@@ -1,11 +1,13 @@
-# computation based on:
+#
+# implementation based on:
 # 
 # Schuhbeck, T. M. B., Sterner, P., & Goretzko, D. (2026). 
 # Quantifying Measurement Non-Invariance Beyond Simple Structure: 
 # The Closed Formulas of Universal Effect Size Measures for MI. 
 # Structural Equation Modeling: A Multidisciplinary Journal, 33(1), 81-88.
 #
-# ===================================================
+# =============================================================================
+
 
 library(pracma) # erf() needed in \code(exp_response_diff)
 
