@@ -36,7 +36,21 @@ exp_response_diff <- function(nu, lambda, nu_g, lambda_g, alpha_g, psi_g,
 }
 
 
+EDitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
+  exp_response_diff(nu, lamda, nu_g, lambda_g, alpha_g, psi_g, 
+                    difference = "signed", response = "item")
+}
+
 EADitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   exp_response_diff(nu, lamda, nu_g, lambda_g, alpha_g, psi_g, 
                     difference = "absolute", response = "item")
 }
+
+ESDitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
+  exp_response_diff(nu, lamda, nu_g, lambda_g, alpha_g, psi_g, 
+                    difference = "squared", response = "item")
+}
+
+RESDitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
+  sqrt(ESDitem(nu, lamda, nu_g, lambda_g, alpha_g, psi_g))
+} 
