@@ -10,13 +10,12 @@
 library(pracma) # erf() needed in \code(exp_response_diff)
 
 
-# nu: intercept
-# lambda: loading(-vector)
-# alpha: latent mean(-vector)
-# psi: latent variance(/covariance matrix)
-
 exp_response_diff <- function(nu, lambda, nu_g, lambda_g, alpha_g, psi_g,
                               difference = "absolute", responseType = "item") {
+  # nu: intercept
+  # lambda: loading(-vector)
+  # alpha: latent mean(-vector)
+  # psi: latent variance(/covariance matrix)
   
   dnu <- nu_g - nu
   dlambda <- matrix(lambda_g) - matrix(lambda)
