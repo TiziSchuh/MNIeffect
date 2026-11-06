@@ -13,7 +13,7 @@ library(pracma) # erf() needed in \code(exp_response_diff)
 
 
 exp_response_diff <- function(nu, lambda, nu_g, lambda_g, alpha_g, psi_g,
-                              difference = "absolute", responseType = "item") {
+                              difference = "absolute") {
   # nu: intercept
   # lambda: loading(-vector)
   # alpha: latent mean(-vector)
@@ -44,19 +44,38 @@ exp_response_diff <- function(nu, lambda, nu_g, lambda_g, alpha_g, psi_g,
 
 EDitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   exp_response_diff(nu, lamda, nu_g, lambda_g, alpha_g, psi_g, 
-                    difference = "signed", response = "item")
+                    difference = "signed")
 }
 
 EADitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   exp_response_diff(nu, lamda, nu_g, lambda_g, alpha_g, psi_g, 
-                    difference = "absolute", response = "item")
+                    difference = "absolute")
 }
 
 ESDitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   exp_response_diff(nu, lamda, nu_g, lambda_g, alpha_g, psi_g, 
-                    difference = "squared", response = "item")
+                    difference = "squared")
 }
 
 RESDitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   sqrt(ESDitem(nu, lamda, nu_g, lambda_g, alpha_g, psi_g))
+} 
+
+EDtest <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
+  exp_response_diff(sum(nu), sum(lamda), sum(nu_g), sum(lambda_g), alpha_g, psi_g, 
+                    difference = "signed")
+}
+
+EADtest <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
+  exp_response_diff(sum(nu), sum(lamda), sum(nu_g), sum(lambda_g), alpha_g, psi_g, 
+                    difference = "absolute")
+}
+
+ESDtest <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
+  exp_response_diff(sum(nu), sum(lamda), sum(nu_g), sum(lambda_g), alpha_g, psi_g, 
+                    difference = "squared")
+}
+
+RESDtest <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
+  sqrt(ESDtest(nu, lamda, nu_g, lambda_g, alpha_g, psi_g))
 } 

@@ -1,5 +1,8 @@
 source("R/FA_functions.R")
 
+# ------------------------------------------------------------------------------------------------------
+# one factor
+
 nu <- 0
 lambda <- .72
 nu_g <- 0
@@ -12,8 +15,8 @@ EADitem(nu, lambda, nu_g, lambda_g, alpha_g, psi_g)
 RESDitem(nu, lambda, nu_g, lambda_g, alpha_g, psi_g)
 
 
-
-# test: compare to numerically approximated integral
+# ------------------------------------------------------------------------------------------------------
+# compare to numerically approximated integral
 
 diff <- function(theta) {
   out <- ((nu_g + lambda_g*theta) - (nu + lambda*theta)) * dnorm(theta, mean=alpha_g, sd=sqrt(psi_g))
