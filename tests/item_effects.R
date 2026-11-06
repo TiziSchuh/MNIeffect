@@ -1,4 +1,4 @@
-source("R/raw_functions.R")
+source("R/FA_functions.R")
 
 nu <- 0
 lambda <- .72
