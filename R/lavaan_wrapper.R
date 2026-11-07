@@ -97,7 +97,7 @@ MNIeffect <- function(fit, baseline, std = NULL, measure = "EAD") {
   )
   
   frame
-  }
+}
 
 
 ED <- function(fit, baseline, std = NULL) {
