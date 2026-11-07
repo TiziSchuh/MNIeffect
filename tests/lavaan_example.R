@@ -10,7 +10,9 @@ fit <- cfa(test_model, data = HolzingerSwineford1939, group = "school")
 fit_global <- cfa(test_model, data = HolzingerSwineford1939, meanstructure = TRUE)
 
 # effect of non-invariance w.r.t global fit
+ED(fit, baseline = fit_global)
 EAD(fit, baseline = fit_global)
+RESD(fit, baseline = fit_global)
 
 # effect of non-invariance w.r.t reference group
 EAD(fit, baseline = "Pasteur")
