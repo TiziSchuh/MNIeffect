@@ -5,17 +5,25 @@ source("R/lavaan_wrapper.R")
 test_model <- ' visual  =~ x1 + x2 + x3
               textual =~ x4 + x5 + x6
               speed   =~ x7 + x8 + x9 '
-
-# multi-group model for group-specific response behavior 
+ 
 fit <- cfa(test_model, data = HolzingerSwineford1939, group = "school")
 
-# single-group model for global response behavior
+
+# --- global baseline --- 
+
+# via pooled parameters
+round(ED(fit), digits = 2)
+round(EAD(fit), digits = 2)
+round(RESD(fit), digits = 2)
+
+# via single group model (fit_global)
 fit_global <- cfa(test_model, data = HolzingerSwineford1939, meanstructure = TRUE)
+round(ED(fit, baseline = fit_global))
+round(EAD(fit, baseline = fit_global))
+round(RESD(fit, baseline = fit_global))
 
-# effect of non-invariance w.r.t global fit
-ED(fit, baseline = fit_global)
-EAD(fit, baseline = fit_global)
-RESD(fit, baseline = fit_global)
+# --- reference group baseline ---
 
-# effect of non-invariance w.r.t reference group
-EAD(fit, baseline = "Pasteur")
+round(ED(fit, baseline = "Pasteur"), digits = 2)
+round(EAD(fit, baseline = "Pasteur"), digits = 2)
+round(RESD(fit, baseline = "Pasteur"), digits = 2)

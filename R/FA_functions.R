@@ -62,17 +62,17 @@ RESDitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
 } 
 
 EDtest <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
-  exp_response_diff(sum(nu), sum(lamda), sum(nu_g), sum(lambda_g), alpha_g, psi_g, 
+  exp_response_diff(sum(nu), colSums(lamda), sum(nu_g), colSums(lambda_g), alpha_g, psi_g, 
                     difference = "signed")
 }
 
 EADtest <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
-  exp_response_diff(sum(nu), sum(lamda), sum(nu_g), sum(lambda_g), alpha_g, psi_g, 
+  exp_response_diff(sum(nu), colSums(lamda), sum(nu_g), colSums(lambda_g), alpha_g, psi_g, 
                     difference = "absolute")
 }
 
 ESDtest <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
-  exp_response_diff(sum(nu), sum(lamda), sum(nu_g), sum(lambda_g), alpha_g, psi_g, 
+  exp_response_diff(sum(nu), colSums(lamda), sum(nu_g), colSums(lambda_g), alpha_g, psi_g, 
                     difference = "squared")
 }
 
