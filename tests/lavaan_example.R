@@ -9,8 +9,13 @@ test_model <- ' visual  =~ x1 + x2 + x3
 fit <- cfa(test_model, data = HolzingerSwineford1939, group = "school")
 fit_global <- cfa(test_model, data = HolzingerSwineford1939, meanstructure = TRUE)
 
-round(MNIdir(fit), digits = 3)
-round(MNIdir(fit, baseline = "Pasteur"), digits = 3)
+round(EAD(fit, std = "global"), digits = 3)
+round(RESD(fit, std = "global"), digits = 3)
+round(ESD(fit, baseline = "Pasteur", std = "global"), digits = 3)
+round(RESD(fit, baseline = "Pasteur", std = "reference"), digits = 3)
+
+MNIdir(fit)
+round(MNIdir(fit, baseline = "Pasteur", include.sumscore = FALSE), digits = 3)
 
 round(ED(fit, std = "global"), digits = 3)
 round(ED(fit, std = "group"), digits = 3)
