@@ -9,7 +9,7 @@
 # =============================================================================
 
 
-library(pracma) # erf() needed in \code(exp_response_diff)
+# library(pracma): erf() needed in \code(exp_response_diff)
 
 
 exp_response_diff <- function(nu, lambda, nu_g, lambda_g, alpha_g, psi_g,

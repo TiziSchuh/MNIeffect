@@ -1,6 +1,3 @@
-source("R/FA_functions.R")
-
-
 get_sumscores <- function(fit) {
   X <- lavInspect(fit, "data")
   if (!is.list(X)) X <- list(X)
