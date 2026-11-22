@@ -9,7 +9,7 @@ remotes::install_github("TiziSchuh/MNIeffect")
 ```
 
 
-### Holzinger-Swineford Example 
+### Code-Example: Holzinger-Swineford 
 
 A table of standardized group (EAD) and across-group (TEAD) effect sizes of measurement non-invariance on both item- and sumscore-level,
 
