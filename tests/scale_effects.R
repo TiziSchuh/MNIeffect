@@ -19,7 +19,7 @@ RESDtest(nu, lambda, nu_g, lambda_g, alpha_g, psi_g)
 # compare to numerically approximated integral
 
 diff <- function(theta) {
-  out <- (sum(nu_g + lambda_g*theta) - (nu + lambda*theta)) * dnorm(theta, mean=alpha_g, sd=sqrt(psi_g))
+  out <- sum((nu_g + lambda_g*theta) - (nu + lambda*theta)) * dnorm(theta, mean=alpha_g, sd=sqrt(psi_g))
 }
 diff_abs <- function(theta) {
   out <- abs(sum((nu_g + lambda_g*theta) - (nu + lambda*theta))) * dnorm(theta, mean=alpha_g, sd=sqrt(psi_g))

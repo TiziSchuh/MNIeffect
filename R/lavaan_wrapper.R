@@ -1,3 +1,4 @@
+#' @noRd
 get_sumscores <- function(fit) {
   X <- lavInspect(fit, "data")
   if (!is.list(X)) X <- list(X)
@@ -52,7 +53,9 @@ get_sumscores <- function(fit) {
 #'  
 #' @returns A dataframe of item-level (and sumscore-level) group and 
 #' across-group non-invariance effects, either in the original metric 
-#' or standardized 
+#' or standardized
+#' 
+#' @noRd 
 MNIeffect <- function(fit, baseline, std, include.sumscore, measure) {
   
   lambda <- lapply(lavInspect(fit, "est"), function(x) {unname(x$lambda)})
@@ -66,7 +69,7 @@ MNIeffect <- function(fit, baseline, std, include.sumscore, measure) {
   ntotal <- lavInspect(fit, "ntotal")
   p <- nobs/ntotal # group proportions
 
-  if (class(baseline) == "lavaan") {
+  if (inherits(baseline, "lavaan")) {
     lambda_base <- lavTech(baseline, "est")$lambda
     if (is.null(lavTech(baseline, "est")$nu)){
       stop("'meanstructure = TRUE' required in the baseline fit object")
@@ -93,7 +96,7 @@ MNIeffect <- function(fit, baseline, std, include.sumscore, measure) {
     sd.sumscore <- rep(1, ngroups)
 
     if (sd.type == "global") {
-      if (class(baseline) == "lavaan") { 
+      if (inherits(baseline, "lavaan")) { 
         sd_base <- sqrt(diag(lavTech(baseline, "sampstat")[[1]]$cov))
         sd <- t(replicate(ngroups, sd_base))
         sd.sumscore <- replicate(ngroups,sd(get_sumscores(baseline)[[1]]))
@@ -128,9 +131,9 @@ MNIeffect <- function(fit, baseline, std, include.sumscore, measure) {
       sd.sumscore_ref <- sd(get_sumscores(fit)[[baseline]])
       r <- match(baseline, lavInspect(fit, "group.label"))
       for (g in 1:ngroups) {
-        sd[g,] <- (nobs[r]-1)*sd_ref + (nobs[g]-1)*diag(lavTech(fit, "sampstat")[[g]]$cov)
+        sd[g,] <- (nobs[r]-1)*(sd_ref^2) + (nobs[g]-1)*diag(lavTech(fit, "sampstat")[[g]]$cov)
         sd[g,] <- sqrt(sd[g,]/(nobs[g]+nobs[r]-2))
-        sd.sumscore[g] <- (nobs[r]-1)*sd.sumscore_ref + (nobs[g]-1)*(sd(get_sumscores(fit)[[g]])^2)
+        sd.sumscore[g] <- (nobs[r]-1)*(sd.sumscore_ref^2) + (nobs[g]-1)*(sd(get_sumscores(fit)[[g]])^2)
         sd.sumscore[g] <- sqrt(sd.sumscore[g]/(nobs[g]+nobs[r]-2))
       }
     }
@@ -140,7 +143,7 @@ MNIeffect <- function(fit, baseline, std, include.sumscore, measure) {
     sd.sumscore_total <- 1
 
     if (std != FALSE) {
-      if (class(baseline) == "lavaan") { 
+      if (inherits(baseline, "lavaan")) { 
         sd_total <- sqrt(diag(lavTech(baseline, "sampstat")[[1]]$cov))
         sd.sumscore_total <- sd(get_sumscores(baseline)[[1]])
       }
@@ -164,10 +167,11 @@ MNIeffect <- function(fit, baseline, std, include.sumscore, measure) {
     )
   } 
 
-  sd <- get_sd(std)$group
-  sd_total <- get_sd(std)$total
-  sd.sumscore <- get_sd(std)$group.sumscore
-  sd.sumscore_total <- get_sd(std)$total.sumscore
+  sds <- get_sd(std) 
+  sd <- sds$group
+  sd_total <- sds$total
+  sd.sumscore <- sds$group.sumscore
+  sd.sumscore_total <- sds$total.sumscore
 
 
   get_effects <- function(effect.type) {
@@ -297,10 +301,11 @@ MNIeffect <- function(fit, baseline, std, include.sumscore, measure) {
     )
   }
 
-  effect <- get_effects(measure)$group
-  effect_total <- get_effects(measure)$total
-  effect.sumscore <- get_effects(measure)$group.scumscore
-  effect.sumscore_total <- get_effects(measure)$total.sumscore
+  effects <- get_effects(measure) 
+  effect <- effects$group
+  effect_total <- effects$total
+  effect.sumscore <- effects$group.sumscore
+  effect.sumscore_total <- effects$total.sumscore
 
 
   frame <- data.frame(
@@ -345,6 +350,17 @@ MNIeffect <- function(fit, baseline, std, include.sumscore, measure) {
 #' Additionally calculate group and across-group ED effects for sumscores.  
 #' 
 #' @examples
+#' model <- ' visual  =~ x1 + x2 + x3
+#'            textual =~ x4 + x5 + x6
+#'            speed   =~ x7 + x8 + x9 '
+#' dat <- lavaan::HolzingerSwineford1939
+#' 
+#' # multigroup model
+#' fit <- lavaan::cfa(model, data = dat, group = "school")
+#' 
+#' # single-group model (only needed for baseline = fit_global)
+#' fit_global <- lavaan::cfa(model, data = dat, meanstructure = TRUE)
+#' 
 #' ED(fit)
 #' ED(fit, std = "global")
 #' ED(fit, baseline = fit_global, std = "global") 
@@ -382,6 +398,17 @@ ED <- function(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE) {
 #' Additionally calculate group and across-group EAD effects for sumscores.  
 #' 
 #' @examples
+#' model <- ' visual  =~ x1 + x2 + x3
+#'            textual =~ x4 + x5 + x6
+#'            speed   =~ x7 + x8 + x9 '
+#' dat <- lavaan::HolzingerSwineford1939
+#' 
+#' # multigroup model
+#' fit <- lavaan::cfa(model, data = dat, group = "school")
+#' 
+#' # single-group model (only needed for baseline = fit_global)
+#' fit_global <- lavaan::cfa(model, data = dat, meanstructure = TRUE)
+#' 
 #' EAD(fit)
 #' EAD(fit, std = "global")
 #' EAD(fit, baseline = fit_global, std = "global") 
@@ -412,6 +439,17 @@ EAD <- function(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE) 
 #' non-invariance.  
 #' 
 #' @examples
+#' model <- ' visual  =~ x1 + x2 + x3
+#'            textual =~ x4 + x5 + x6
+#'            speed   =~ x7 + x8 + x9 '
+#' dat <- lavaan::HolzingerSwineford1939
+#' 
+#' # multigroup model
+#' fit <- lavaan::cfa(model, data = dat, group = "school")
+#' 
+#' # single-group model (only needed for baseline = fit_global)
+#' fit_global <- lavaan::cfa(model, data = dat, meanstructure = TRUE)
+#' 
 #' MNIdir(fit)
 #' MNIdir(fit, baseline = fit_global) 
 #' MNIdir(fit, baseline = "Pasteur", include.sumscore = FALSE)
@@ -426,6 +464,50 @@ MNIdir <- function(fit, baseline = "pooled", include.sumscore = TRUE) {
   df
 }
 
+#' Average Squared Difference of Expected Responses
+#' 
+#' This function calculates the Expected Squared Difference (ESD) and Total 
+#' Expected Squared Difference (TESD) of responses for linear common factor 
+#' models with (jointly) normally distributed factors. 
+#' In almost all cases, RESD and RTESD should be calculated instead.
+#' 
+#' @param fit A lavaan multigroup fit object 
+#' @param baseline Default `"pooled"` uses pooled intercepts and loadings 
+#' as global baseline responses. A single group lavaan `fit` object can 
+#' also be used to define global baseline responses. 
+#' For baseline responses defined by a reference group, 
+#' pass the name of the reference group as a string.
+#' @param std Default `FALSE`: report ESD in orginial metric. 
+#' Option `"global"`: report ESD in global/globally pooled SDs. 
+#' Option `"group"`: returns ESD in each group's respective SD.
+#' Option `"reference"`: report ESD in reference group's SD.
+#' Option `"pooled"`: report ESD in (reference-focal-)pooled SD.
+#' NOTE: total effects are ALWAYS standarized using global SDs
+#' for ANY option apart from `FALSE`!
+#' @param include.sumscore Default `TRUE`. 
+#' Additionally calculate group and across-group ESD effects for sumscores.  
+#' 
+#' @examples
+#' model <- ' visual  =~ x1 + x2 + x3
+#'            textual =~ x4 + x5 + x6
+#'            speed   =~ x7 + x8 + x9 '
+#' dat <- lavaan::HolzingerSwineford1939
+#' 
+#' # multigroup model
+#' fit <- lavaan::cfa(model, data = dat, group = "school")
+#' 
+#' # single-group model (only needed for baseline = fit_global)
+#' fit_global <- lavaan::cfa(model, data = dat, meanstructure = TRUE)
+#' 
+#' ESD(fit)
+#' ESD(fit, std = "global")
+#' ESD(fit, baseline = fit_global, std = "global") 
+#' ESD(fit, baseline = "Pasteur", std = "pooled", include.sumscore = FALSE)
+#' 
+#' @returns A dataframe of item-level and sumscore-level ESD group effects  
+#' and TESD across-group effects in the original metric; for
+#' standardized effects SESD and STESD, use the optional argument `std`.
+#'  
 #' @export
 ESD <- function(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE) {
   MNIeffect(fit, baseline, std, include.sumscore, measure = "ESD")
@@ -445,25 +527,36 @@ ESD <- function(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE) 
 #' also be used to define global baseline responses. 
 #' For baseline responses defined by a reference group, 
 #' pass the name of the reference group as a string.
-#' @param std Default `FALSE`: report EAD in orginial metric. 
-#' Option `"global"`: report EAD in global/globally pooled SDs. 
-#' Option `"group"`: returns EAD in each group's respective SD.
-#' Option `"reference"`: report EAD in reference group's SD.
-#' Option `"pooled"`: report EAD in (reference-focal-)pooled SD.
+#' @param std Default `FALSE`: report RESD in orginial metric. 
+#' Option `"global"`: report RESD in global/globally pooled SDs. 
+#' Option `"group"`: returns RESD in each group's respective SD.
+#' Option `"reference"`: report RESD in reference group's SD.
+#' Option `"pooled"`: report RESD in (reference-focal-)pooled SD.
 #' NOTE: total effects are ALWAYS standarized using global SDs
 #' for ANY option apart from `FALSE`!
 #' @param include.sumscore Default `TRUE`. 
-#' Additionally calculate group and across-group EAD effects for sumscores.  
+#' Additionally calculate group and across-group RESD effects for sumscores.  
 #' 
 #' @examples
-#' EAD(fit)
-#' EAD(fit, std = "global")
-#' EAD(fit, baseline = fit_global, std = "global") 
-#' EAD(fit, baseline = "Pasteur", std = "pooled", include.sumscore = FALSE)
+#' model <- ' visual  =~ x1 + x2 + x3
+#'            textual =~ x4 + x5 + x6
+#'            speed   =~ x7 + x8 + x9 '
+#' dat <- lavaan::HolzingerSwineford1939
 #' 
-#' @returns A dataframe of item-level and sumscore-level EAD group effects  
-#' and TEAD across-group effects in the original metric; for
-#' standardized effects SEAD and STEAD, use the optional argument `std`.
+#' # multigroup model
+#' fit <- lavaan::cfa(model, data = dat, group = "school")
+#' 
+#' # single-group model (only needed for baseline = fit_global)
+#' fit_global <- lavaan::cfa(model, data = dat, meanstructure = TRUE)
+#' 
+#' RESD(fit)
+#' RESD(fit, std = "global")
+#' RESD(fit, baseline = fit_global, std = "global") 
+#' RESD(fit, baseline = "Pasteur", std = "pooled", include.sumscore = FALSE)
+#' 
+#' @returns A dataframe of item-level and sumscore-level RESD group effects  
+#' and RTESD across-group effects in the original metric; for
+#' standardized effects SRESD and SRTESD, use the optional argument `std`.
 #'  
 #' @export
 RESD <- function(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE) {

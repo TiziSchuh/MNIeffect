@@ -1,0 +1,12 @@
+Package: MNIeffect
+Title: Lavaan Wrapper for Effect Sizes of Measurement Non-Invariance
+Version: 0.0.0.9000
+Authors@R: 
+    person("Tizian", "Schuhbeck", , "t.schuhbeck@gmx.de", role = c("aut", "cre"))
+Description: This package implements the effect size measures of measurement non-invariance defined in Schuhbeck et al. (2026) for linear common factor models with (jointly) normally distributed factors.
+License: Apache License (>= 2)
+Config/roxygen2/version: 8.1.1
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Imports: 
+    lavaan

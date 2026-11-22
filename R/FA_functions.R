@@ -9,9 +9,11 @@
 # =============================================================================
 
 
-# library(pracma): erf() needed in \code(exp_response_diff)
+#' @noRd
+erf <- function(y) 2*pnorm(sqrt(2)*y)-1
 
 
+#' @noRd
 exp_response_diff <- function(nu, lambda, nu_g, lambda_g, alpha_g, psi_g,
                               difference = "absolute") {
   # nu: intercept
@@ -42,40 +44,55 @@ exp_response_diff <- function(nu, lambda, nu_g, lambda_g, alpha_g, psi_g,
 }
 
 
+#' @noRd
 EDitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   exp_response_diff(nu, lamda, nu_g, lambda_g, alpha_g, psi_g, 
                     difference = "signed")
 }
 
+
+#' @noRd
 EADitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   exp_response_diff(nu, lamda, nu_g, lambda_g, alpha_g, psi_g, 
                     difference = "absolute")
 }
 
+
+#' @noRd
 ESDitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   exp_response_diff(nu, lamda, nu_g, lambda_g, alpha_g, psi_g, 
                     difference = "squared")
 }
 
+
+#' @noRd
 RESDitem <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   sqrt(ESDitem(nu, lamda, nu_g, lambda_g, alpha_g, psi_g))
 } 
 
+
+#' @noRd
 EDtest <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   exp_response_diff(sum(nu), colSums(lamda), sum(nu_g), colSums(lambda_g), alpha_g, psi_g, 
                     difference = "signed")
 }
 
+
+#' @noRd
 EADtest <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   exp_response_diff(sum(nu), colSums(lamda), sum(nu_g), colSums(lambda_g), alpha_g, psi_g, 
                     difference = "absolute")
 }
 
+
+#' @noRd
 ESDtest <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   exp_response_diff(sum(nu), colSums(lamda), sum(nu_g), colSums(lambda_g), alpha_g, psi_g, 
                     difference = "squared")
 }
 
+
+#' @noRd
 RESDtest <- function(nu, lamda, nu_g, lambda_g, alpha_g, psi_g) {
   sqrt(ESDtest(nu, lamda, nu_g, lambda_g, alpha_g, psi_g))
 } 
