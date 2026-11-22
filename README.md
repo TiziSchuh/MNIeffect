@@ -1,9 +1,7 @@
 # The R-Package `MNIeffect`
 
 This package implemets the effect size measures of Schuhbeck et al. (2026) – see the [Preprint on OSF](https://doi.org/10.31234/osf.io/sjtp3_v2) – 
-for  linear factor models with (jointly) normally distributed factors.
-
-You can install the package as follows:
+for  linear factor models with (jointly) normally distributed factors. Installation of the package:
 
 ```R
 # install.packages("remotes")
