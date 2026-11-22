@@ -11,7 +11,7 @@ remotes::install_github("TiziSchuh/MNIeffect")
 
 ### Code-Example: Holzinger-Swineford 
 
-A table of standardized group (EAD) and across-group (TEAD) effect sizes of measurement non-invariance – with respect to global expected responses – on both item- and sumscore-level,
+A table of standardized group (EAD) and across-group (TEAD) effect sizes of measurement non-invariance – with respect to global expected responses – on both item- and sumscore-level
 
 |            |   X1|   X2|   X3|   X4|   X5|   X6|   X7|   X8|   X9| Sumscore|
 |:-----------|----:|----:|----:|----:|----:|----:|----:|----:|----:|--------:|
