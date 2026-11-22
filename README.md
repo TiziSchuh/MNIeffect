@@ -1,6 +1,6 @@
 # The R-Package `MNIeffect`
 
-This package implemets the effect size measures of Schuhbeck et al. (2026) -- see the [Preprint on OSF](https://doi.org/10.31234/osf.io/sjtp3_v2) -- 
+This package implemets the effect size measures of Schuhbeck et al. (2026) – see the [Preprint on OSF](https://doi.org/10.31234/osf.io/sjtp3_v2) – 
 for  linear factor models with (jointly) normally distributed factors.
 
 You can install the package as follows:
@@ -10,7 +10,7 @@ You can install the package as follows:
 remotes::install_github("TiziSchuh/MNIeffect")
 ```
 
-## Source Code for the Empirical Illustration in Schuhbeck et al. (2026)
+### Source Code for the Empirical Illustration in Schuhbeck et al. (2026)
 
 This repository also contains the source code (see `illustration/`) for the empirical illustration in:
 
