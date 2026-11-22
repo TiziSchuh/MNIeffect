@@ -1,7 +1,6 @@
 source("R/FA_functions.R")
 
 
-# helper function
 get_sumscores <- function(fit) {
   X <- lavInspect(fit, "data")
   if (!is.list(X)) X <- list(X)
@@ -18,7 +17,46 @@ get_sumscores <- function(fit) {
 }
 
 
-MNIeffect <- function(fit, baseline, std = FALSE, sumscore.include = TRUE, measure = "EAD") {
+#' Ths function implements a lavaan wrapper for the effect size measures
+#' of measurement non-invariance in:
+#' 
+#' Schuhbeck, T. M. B., Partsch, M. V., Sterner, P., & Goretzko, D. 
+#' (2026, November 14). Effect-Based Assessments of Intergroup Comparability 
+#' – The Practical Impact of Measurement Non-Invariance & Differential 
+#' Item Functioning on Psychological Tests and Scales. 
+#' Retrieved from osf.io/preprints/psyarxiv/sjtp3_v2
+#' 
+#' It provides the functionality to calculate the effects 
+#' (S)ED, (S)EAD, (S)ESD, (S)RESD, (S)TED, (S)TEAD, (S)TESD, (S)RTESD 
+#' and their respective effect directions in lavaan for linear common 
+#' factor models with (jointly) normally distributed factors, based on the
+#' formulaic derivation in:
+#' 
+#' Schuhbeck, T. M. B., Sterner, P., & Goretzko, D. (2026). Quantifying 
+#' Measurement Non-Invariance Beyond Simple Structure: The Closed Formulas 
+#' of Universal Effect Size Measures for MI. Structural Equation Modeling: 
+#' A Multidisciplinary Journal, 33(1), 81-88.
+#' 
+#' @param fit A lavaan multigroup fit object 
+#' @param baseline Option `"pooled"`: uses pooled intercepts and loadings 
+#' as global baseline responses. A single group lavaan `fit` object can 
+#' also be used to define global baseline responses. 
+#' For baseline responses defined by a reference group, 
+#' pass the name of the reference group as a string.
+#' @param std Option `FALSE`: reports ED in orginial metric. 
+#' Option `"global"`: reports ED in global/globally pooled SDs. 
+#' Option `"group"`: reports ED in each group's respective SD.
+#' Option `"reference"`: reports ED in reference group's SD.
+#' Option `"pooled"`: reports ED in (reference-focal-)pooled SD.
+#' NOTE: for conceptual reasons, total effects are ALWAYS standarized using 
+#' global SDs for ANY option apart from `FALSE`.
+#' @param include.sumscore Determines whether to include sumscore-level 
+#' effects; can be `TRUE` or `FALSE`. 
+#'  
+#' @returns A dataframe of item-level (and sumscore-level) group and 
+#' across-group non-invariance effects, either in the original metric 
+#' or standardized 
+MNIeffect <- function(fit, baseline, std, include.sumscore, measure) {
   
   lambda <- lapply(lavInspect(fit, "est"), function(x) {unname(x$lambda)})
   nu <- lapply(lavInspect(fit, "est"), function(x) {unname(x$nu)})
@@ -50,142 +88,233 @@ MNIeffect <- function(fit, baseline, std = FALSE, sumscore.include = TRUE, measu
     lambda_base <- unname(lambda[baseline])[[1]]
     nu_base <- unname(nu[baseline])[[1]]
   }
+  
 
+  get_sd <- function(sd.type) {
+    # initialize with 1s = no standardization
+    sd <- matrix(1, ngroups, nitems)
+    sd.sumscore <- rep(1, ngroups)
 
-  sd <- matrix(1, ngroups, nitems)
-  sd_sumscore <- rep(1, ngroups)
-
-  if (std == "global") {
-    if (class(baseline) == "lavaan") { 
-      sd_base <- sqrt(diag(lavTech(baseline, "sampstat")[[1]]$cov))
-      sd <- t(replicate(ngroups, sd_base))
-      sd_sumscore <- replicate(ngroups,sd(get_sumscores(baseline)[[1]]))
-    }
-    else {
-      sd_pool <- rep(0, nitems)
-      sd_sumscore_pool <- 0 
-      for (g in 1:ngroups) {
-        sd_pool <- sd_pool + (nobs[g]-1) * diag(lavTech(fit, "sampstat")[[g]]$cov)
-        sd_sumscore_pool <- sd_sumscore_pool + (nobs[g]-1) * (sd(get_sumscores(fit)[[g]])^2)
+    if (sd.type == "global") {
+      if (class(baseline) == "lavaan") { 
+        sd_base <- sqrt(diag(lavTech(baseline, "sampstat")[[1]]$cov))
+        sd <- t(replicate(ngroups, sd_base))
+        sd.sumscore <- replicate(ngroups,sd(get_sumscores(baseline)[[1]]))
       }
-      sd_pool <- sqrt(sd_pool/(sum(nobs)-ngroups))
-      sd_sumscore_pool <- sqrt(sd_sumscore_pool/(sum(nobs)-ngroups))
-      sd <- t(replicate(ngroups, sd_pool))
-      sd_sumscore <- replicate(ngroups, sd_sumscore_pool)
-    }
-  }
-  else if (std == "group") {
-    for (g in 1:ngroups) {
-      sd[g,] <- sqrt(diag(lavTech(fit, "sampstat")[[g]]$cov))
-      sd_sumscore[g] <- sd(get_sumscores(fit)[[g]])
-    }
-  }
-  else if (std == "reference") {
-    sd_ref <- sqrt(diag(lavTech(fit, "sampstat")[[baseline]]$cov))
-    sd <- t(replicate(ngroups, sd_ref))
-    sd_sumscore_ref <- sd(get_sumscores(fit)[[baseline]])
-    sd_sumscore <- replicate(ngroups, sd_sumscore_ref)
-  }
-  else if (std == "pooled") {
-    sd_ref <- sqrt(diag(lavTech(fit, "sampstat")[[baseline]]$cov))
-    sd_sumscore_ref <- sd(get_sumscores(fit)[[baseline]])
-    r <- match(baseline, lavInspect(fit, "group.label"))
-    for (g in 1:ngroups) {
-      sd[g,] <- (nobs[r]-1)*sd_ref + (nobs[g]-1)*diag(lavTech(fit, "sampstat")[[g]]$cov)
-      sd[g,] <- sqrt(sd[g,]/(nobs[g]+nobs[r]-2))
-      sd_sumscore[g] <- (nobs[r]-1)*sd_sumscore_ref + (nobs[g]-1)*(sd(get_sumscores(fit)[[g]])^2)
-      sd_sumscore[g] <- sqrt(sd_sumscore[g]/(nobs[g]+nobs[r]-2))
-    }
-  }
-
-
-
-  effect <- matrix(0, ngroups, nitems)
-  effect_total <- numeric(nitems)
-  effect_sumscore <- matrix(0, ngroups, ncol = 1)
-  effect_sumscore_total <- 0
-
-  if(measure == "ED"){ 
-    for (i in 1:nitems) {
-      for (g in 1:ngroups) {
-        effect[g,i] <- EDitem(nu_base[i], lambda_base[i, ], 
-                              nu[[g]][i], lambda[[g]][i, ], 
-                              alpha[[g]], psi[[g]]) / sd[g,i]
-        effect_total[i] <- effect_total[i] + p[g] * effect[g,i]
+      else {
+        sd_pool <- rep(0, nitems)
+        sd.sumscore_pool <- 0 
+        for (g in 1:ngroups) {
+          sd_pool <- sd_pool + (nobs[g]-1) * diag(lavTech(fit, "sampstat")[[g]]$cov)
+          sd.sumscore_pool <- sd.sumscore_pool + (nobs[g]-1) * (sd(get_sumscores(fit)[[g]])^2)
+        }
+        sd_pool <- sqrt(sd_pool/(sum(nobs)-ngroups))
+        sd.sumscore_pool <- sqrt(sd.sumscore_pool/(sum(nobs)-ngroups))
+        sd <- t(replicate(ngroups, sd_pool))
+        sd.sumscore <- replicate(ngroups, sd.sumscore_pool)
       }
     }
-    for (g in 1:ngroups) {
-      effect_sumscore[g] <- EDtest(nu_base, lambda_base, 
-                                   nu[[g]], lambda[[g]], 
-                                   alpha[[g]], psi[[g]]) / sd_sumscore[g]
-      effect_sumscore_total <- effect_sumscore_total + p[g] * effect_sumscore[g]
-    }
-  }
-
-  if(measure == "EAD"){ 
-    for (i in 1:nitems) {
+    else if (sd.type == "group") {
       for (g in 1:ngroups) {
-        effect[g,i] <- EADitem(nu_base[i], lambda_base[i, ], 
-                               nu[[g]][i], lambda[[g]][i, ], 
-                               alpha[[g]], psi[[g]]) / sd[g,i]
-        effect_total[i] <- effect_total[i] + p[g] * effect[g,i]
+        sd[g,] <- sqrt(diag(lavTech(fit, "sampstat")[[g]]$cov))
+        sd.sumscore[g] <- sd(get_sumscores(fit)[[g]])
       }
     }
-    for (g in 1:ngroups) {
-      effect_sumscore[g] <- EADtest(nu_base, lambda_base, 
-                                   nu[[g]], lambda[[g]], 
-                                   alpha[[g]], psi[[g]]) / sd_sumscore[g]
-      effect_sumscore_total <- effect_sumscore_total + p[g] * effect_sumscore[g]
+    else if (sd.type == "reference") {
+      sd_ref <- sqrt(diag(lavTech(fit, "sampstat")[[baseline]]$cov))
+      sd <- t(replicate(ngroups, sd_ref))
+      sd.sumscore_ref <- sd(get_sumscores(fit)[[baseline]])
+      sd.sumscore <- replicate(ngroups, sd.sumscore_ref)
     }
-  }
-
-  if(measure == "ESD"){ 
-    for (i in 1:nitems) {
+    else if (sd.type == "pooled") {
+      sd_ref <- sqrt(diag(lavTech(fit, "sampstat")[[baseline]]$cov))
+      sd.sumscore_ref <- sd(get_sumscores(fit)[[baseline]])
+      r <- match(baseline, lavInspect(fit, "group.label"))
       for (g in 1:ngroups) {
-        effect[g,i] <- ESDitem(nu_base[i], lambda_base[i, ], 
-                              nu[[g]][i], lambda[[g]][i, ], 
-                              alpha[[g]], psi[[g]])
-        effect_total[i] <- effect_total[i] + p[g] * effect[g,i]
+        sd[g,] <- (nobs[r]-1)*sd_ref + (nobs[g]-1)*diag(lavTech(fit, "sampstat")[[g]]$cov)
+        sd[g,] <- sqrt(sd[g,]/(nobs[g]+nobs[r]-2))
+        sd.sumscore[g] <- (nobs[r]-1)*sd.sumscore_ref + (nobs[g]-1)*(sd(get_sumscores(fit)[[g]])^2)
+        sd.sumscore[g] <- sqrt(sd.sumscore[g]/(nobs[g]+nobs[r]-2))
       }
     }
-    for (g in 1:ngroups) {
-      effect_sumscore[g] <- ESDtest(nu_base, lambda_base, 
-                                   nu[[g]], lambda[[g]], 
-                                   alpha[[g]], psi[[g]])
-      effect_sumscore_total <- effect_sumscore_total + p[g] * effect_sumscore[g]
+
+    # for across-group effects
+    sd_total <- matrix(1, nrow=1, nitems)
+    sd.sumscore_total <- 1
+
+    if (std != FALSE) {
+      if (class(baseline) == "lavaan") { 
+        sd_total <- sqrt(diag(lavTech(baseline, "sampstat")[[1]]$cov))
+        sd.sumscore_total <- sd(get_sumscores(baseline)[[1]])
+      }
+      else {
+        sd_pool <- rep(0, nitems)
+        sd.sumscore_pool <- 0 
+        for (g in 1:ngroups) {
+          sd_pool <- sd_pool + (nobs[g]-1) * diag(lavTech(fit, "sampstat")[[g]]$cov)
+          sd.sumscore_pool <- sd.sumscore_pool + (nobs[g]-1) * (sd(get_sumscores(fit)[[g]])^2)
+        }
+        sd_total <- sqrt(sd_pool/(sum(nobs)-ngroups))
+        sd.sumscore_total <- sqrt(sd.sumscore_pool/(sum(nobs)-ngroups))
+      }
     }
+
+    list(
+      group = sd,
+      total = sd_total,
+      group.sumscore = sd.sumscore,
+      total.sumscore = sd.sumscore_total
+    )
+  } 
+
+  sd <- get_sd(std)$group
+  sd_total <- get_sd(std)$total
+  sd.sumscore <- get_sd(std)$group.sumscore
+  sd.sumscore_total <- get_sd(std)$total.sumscore
+
+
+  get_effects <- function(effect.type) {
+    # initialize with zeros
+    effect <- matrix(0, ngroups, nitems)
+    effect_total <- numeric(nitems)
+    effect.sumscore <- matrix(0, ngroups, ncol = 1)
+    effect.sumscore_total <- 0
+
+    if(measure == "ED"){
+      # item-level
+      for (i in 1:nitems) {
+        for (g in 1:ngroups) {
+          effect[g,i] <- EDitem(nu_base[i], lambda_base[i, ], 
+                                nu[[g]][i], lambda[[g]][i, ], 
+                                alpha[[g]], psi[[g]]) 
+          effect_total[i] <- effect_total[i] + p[g] * effect[g,i]
+          # standardize 
+          effect[g,i] <- effect[g,i] / sd[g,i]
+        }
+        # standardize
+        effect_total[i] <- effect_total[i] /sd_total[i]
+      }
+      # sumscore-level
+      for (g in 1:ngroups) {
+        effect.sumscore[g] <- EDtest(nu_base, lambda_base, 
+                                    nu[[g]], lambda[[g]], 
+                                    alpha[[g]], psi[[g]]) 
+        effect.sumscore_total <- effect.sumscore_total + p[g] * effect.sumscore[g]
+        # standardize
+        effect.sumscore[g] <- effect.sumscore[g] / sd.sumscore[g] 
+      }
+      # standardize
+      effect.sumscore_total <- effect.sumscore_total / sd.sumscore_total 
+    }
+
+    if(measure == "EAD"){ 
+      # item-level
+      for (i in 1:nitems) {
+        for (g in 1:ngroups) {
+          effect[g,i] <- EADitem(nu_base[i], lambda_base[i, ], 
+                                nu[[g]][i], lambda[[g]][i, ], 
+                                alpha[[g]], psi[[g]])
+          effect_total[i] <- effect_total[i] + p[g] * effect[g,i]
+          # standardize 
+          effect[g,i] <- effect[g,i] / sd[g,i]
+        }
+        # standardize
+        effect_total[i] <- effect_total[i] /sd_total[i]
+      }
+      # sum-score level
+      for (g in 1:ngroups) {
+        effect.sumscore[g] <- EADtest(nu_base, lambda_base, 
+                                    nu[[g]], lambda[[g]], 
+                                    alpha[[g]], psi[[g]])
+        effect.sumscore_total <- effect.sumscore_total + p[g] * effect.sumscore[g]
+        # standardize
+        effect.sumscore[g] <- effect.sumscore[g] / sd.sumscore[g] 
+      }
+      # standardize
+      effect.sumscore_total <- effect.sumscore_total / sd.sumscore_total 
+    }
+
+    if(measure == "ESD"){ 
+      # item-level
+      for (i in 1:nitems) {
+        for (g in 1:ngroups) {
+          effect[g,i] <- ESDitem(nu_base[i], lambda_base[i, ], 
+                                nu[[g]][i], lambda[[g]][i, ], 
+                                alpha[[g]], psi[[g]])
+          effect_total[i] <- effect_total[i] + p[g] * effect[g,i]
+          # standardize 
+          effect[g,i] <- effect[g,i] / sd[g,i]
+        }
+        # standardize
+        effect_total[i] <- effect_total[i] /sd_total[i]
+      }
+      # sumscore-level
+      for (g in 1:ngroups) {
+        effect.sumscore[g] <- ESDtest(nu_base, lambda_base, 
+                                    nu[[g]], lambda[[g]], 
+                                    alpha[[g]], psi[[g]])
+        effect.sumscore_total <- effect.sumscore_total + p[g] * effect.sumscore[g]
+        # standardize
+        effect.sumscore[g] <- effect.sumscore[g] / sd.sumscore[g] 
+      }
+      # standardize
+      effect.sumscore_total <- effect.sumscore_total / sd.sumscore_total 
+    }
+
+    if(measure == "RESD"){
+      # item-level
+      for (i in 1:nitems) {
+        for (g in 1:ngroups) {
+          effect[g,i] <- ESDitem(nu_base[i], lambda_base[i, ], 
+                                nu[[g]][i], lambda[[g]][i, ], 
+                                alpha[[g]], psi[[g]])
+          effect_total[i] <- effect_total[i] + p[g] * effect[g,i]
+          effect[g,i] <- sqrt(effect[g,i])
+          # standardize 
+          effect[g,i] <- effect[g,i] / sd[g,i]
+        }
+        effect_total[i] <- sqrt(effect_total[i])
+        # standardize
+        effect_total[i] <- effect_total[i] /sd_total[i]
+      }
+      # sumscore-level
+      for (g in 1:ngroups) {
+        effect.sumscore[g] <- ESDtest(nu_base, lambda_base, 
+                                    nu[[g]], lambda[[g]], 
+                                    alpha[[g]], psi[[g]])
+        effect.sumscore_total <- effect.sumscore_total + p[g] * effect.sumscore[g]
+        effect.sumscore[g] <- sqrt(effect.sumscore[g])
+        # standardize
+        effect.sumscore[g] <- effect.sumscore[g] / sd.sumscore[g] 
+      }
+      effect.sumscore_total <- sqrt(effect.sumscore_total)
+      # standardize
+      effect.sumscore_total <- effect.sumscore_total / sd.sumscore_total 
+    }
+
+    list(
+      group = effect,
+      total = effect_total,
+      group.sumscore = effect.sumscore,
+      total.sumscore = effect.sumscore_total
+    )
   }
 
-  if(measure == "RESD"){ 
-    for (i in 1:nitems) {
-      for (g in 1:ngroups) {
-        effect[g,i] <- ESDitem(nu_base[i], lambda_base[i, ], 
-                              nu[[g]][i], lambda[[g]][i, ], 
-                              alpha[[g]], psi[[g]])
-        effect_total[i] <- effect_total[i] + p[g] * effect[g,i]
-        effect[g,i] <- sqrt(effect[g,i])
-      }
-      effect_total[i] <- sqrt(effect_total[i])
-    }
-    for (g in 1:ngroups) {
-      effect_sumscore[g] <- ESDtest(nu_base, lambda_base, 
-                                   nu[[g]], lambda[[g]], 
-                                   alpha[[g]], psi[[g]])
-      effect_sumscore_total <- effect_sumscore_total + p[g] * effect_sumscore[g]
-      effect_sumscore[g] <- sqrt(effect_sumscore[g])
-    }
-    effect_sumscore_total <- sqrt(effect_sumscore_total)
-  }
+  effect <- get_effects(measure)$group
+  effect_total <- get_effects(measure)$total
+  effect.sumscore <- get_effects(measure)$group.scumscore
+  effect.sumscore_total <- get_effects(measure)$total.sumscore
+
 
   frame <- data.frame(
     rbind(effect, effect_total),
     row.names = append(lavInspect(fit, what = "group.label"), "Total")
   )
-  if (sumscore.include == TRUE) {
-    frame_sumscore <- data.frame(
-      `Sum-Score` = rbind(effect_sumscore, effect_sumscore_total)
+  if (include.sumscore == TRUE) {
+    frame.sumscore <- data.frame(
+      `Sumscore` = rbind(effect.sumscore, effect.sumscore_total)
     )
-    frame <- cbind(frame,frame_sumscore)
+    frame <- cbind(frame,frame.sumscore)
   }
 
   frame
@@ -197,45 +326,149 @@ MNIeffect <- function(fit, baseline, std = FALSE, sumscore.include = TRUE, measu
 #' 
 #' This function calculates the Expected Difference (ED) and Total Expected
 #' Difference (TED) of responses for linear common factor models with 
-#' (jointly) normally distributed factors  
+#' (jointly) normally distributed factors.  
+#' The effect size DeltaMACS (Nye & Drasgow, 2011) is equivalent to
+#' `ED(fit, baseline = "my_ref")`
+#' in the `Sumscore` column 
 #' 
 #' @param fit A lavaan multigroup fit object 
 #' @param baseline Default `"pooled"` uses pooled intercepts and loadings 
 #' as global baseline responses. A single group lavaan `fit` object can 
 #' also be used to define global baseline responses. 
 #' For baseline responses defined by a reference group, 
-#' pass the name of th reference group as a string.
-#' @param std Default `FALSE` returns ED in orginial metric. 
-#' Option `"global"` returns ED in global/globally pooled SDs. 
-#' Option `"group"` returns ED in respective group's SD.
-#' Option `"reference"` returns ED in reference group's SD.
-#' Option `"pooled"` returns ED in reference-focal-pooled SD.
+#' pass the name of the reference group as a string.
+#' @param std Default `FALSE`: report ED in orginial metric. 
+#' Option `"global"`: report ED in global/globally pooled SDs. 
+#' Option `"group"`: report ED in each group's respective SD.
+#' Option `"reference"`: report ED in reference group's SD.
+#' Option `"pooled"`: report ED in (reference-focal-)pooled SD.
+#' NOTE: total effects are ALWAYS standarized using global SDs
+#' for ANY option apart from `FALSE`!
+#' @param include.sumscore Default `TRUE`. 
+#' Additionally calculate group and across-group ED effects for sumscores.  
 #' 
 #' @examples
-#' ED(fit, baseline = "pooled")
-#' ED(fit, baseline = fit_global)
-#' ED(fit, baseline = "women")
+#' ED(fit)
+#' ED(fit, std = "global")
+#' ED(fit, baseline = fit_global, std = "global") 
+#' ED(fit, baseline = "Pasteur", std = "pooled", include.sumscore = FALSE)
 #' 
-#' @returns All item-level values ED (for each group) and TED (across groups) 
+#' @returns A dataframe of item-level and sumscore-level ED group effects  
+#' and TED across-group effects in the original metric; for
+#' standardized effects SED and STED, use the optional argument `std`.
+#'  
 #' @export
-ED <- function(fit, baseline = "pooled", std = FALSE) {
-  MNIeffect(fit, baseline, std, measure = "ED")
+ED <- function(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE) {
+  MNIeffect(fit, baseline, std, include.sumscore, measure = "ED")
 }
 
-EAD <- function(fit, baseline = "pooled", std = FALSE) {
-  MNIeffect(fit, baseline, std, measure = "EAD")
+#' Average Absolute Difference of Expected Responses
+#' 
+#' This function calculates the Expected Absolute Difference (EAD) and Total Expected
+#' Absolute Difference (TEAD) of responses for linear common factor models with 
+#' (jointly) normally distributed factors.  
+#' 
+#' @param fit A lavaan multigroup fit object 
+#' @param baseline Default `"pooled"` uses pooled intercepts and loadings 
+#' as global baseline responses. A single group lavaan `fit` object can 
+#' also be used to define global baseline responses. 
+#' For baseline responses defined by a reference group, 
+#' pass the name of the reference group as a string.
+#' @param std Default `FALSE`: report EAD in orginial metric. 
+#' Option `"global"`: report EAD in global/globally pooled SDs. 
+#' Option `"group"`: returns EAD in each group's respective SD.
+#' Option `"reference"`: report EAD in reference group's SD.
+#' Option `"pooled"`: report EAD in (reference-focal-)pooled SD.
+#' NOTE: total effects are ALWAYS standarized using global SDs
+#' for ANY option apart from `FALSE`!
+#' @param include.sumscore Default `TRUE`. 
+#' Additionally calculate group and across-group EAD effects for sumscores.  
+#' 
+#' @examples
+#' EAD(fit)
+#' EAD(fit, std = "global")
+#' EAD(fit, baseline = fit_global, std = "global") 
+#' EAD(fit, baseline = "Pasteur", std = "pooled", include.sumscore = FALSE)
+#' 
+#' @returns A dataframe of item-level and sumscore-level EAD group effects  
+#' and TEAD across-group effects in the original metric; for
+#' standardized effects SEAD and STEAD, use the optional argument `std`.
+#'  
+#' @export
+EAD <- function(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE) {
+  MNIeffect(fit, baseline, std, include.sumscore, measure = "EAD")
 }
 
-MNIdir <- function(fit, baseline = "pooled") {
-  df <- ED(fit, baseline, std = FALSE) / EAD(fit, baseline, std = FALSE) 
+#' The Direction of Measurement Non-Invariance
+#' 
+#' This function calculates the effect direction of measurement non-invariance 
+#' for linear common factor models with (jointly) normally distributed factors.  
+#' 
+#' @param fit A lavaan multigroup fit object 
+#' @param baseline Default `"pooled"` uses pooled intercepts and loadings 
+#' as global baseline responses. A single group lavaan `fit` object can 
+#' also be used to define global baseline responses. 
+#' For baseline responses defined by a reference group, 
+#' pass the name of the reference group as a string.
+#' @param include.sumscore Default `TRUE`. 
+#' Additionally calculate group and across-group directions for sumscore 
+#' non-invariance.  
+#' 
+#' @examples
+#' MNIdir(fit)
+#' MNIdir(fit, baseline = fit_global) 
+#' MNIdir(fit, baseline = "Pasteur", include.sumscore = FALSE)
+#' 
+#' @returns A dataframe of item-level and sumscore-level group and 
+#' across-group effect directions. 
+#'  
+#' @export
+MNIdir <- function(fit, baseline = "pooled", include.sumscore = TRUE) {
+  df <- ED(fit, baseline, std = FALSE, include.sumscore) / EAD(fit, baseline, std = FALSE, include.sumscore) 
   df[is.na(df)] <- 0
   df
 }
 
-ESD <- function(fit, baseline = "pooled", std = FALSE) {
-  MNIeffect(fit, baseline, std, measure = "ESD")
+#' @export
+ESD <- function(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE) {
+  MNIeffect(fit, baseline, std, include.sumscore, measure = "ESD")
 }
 
-RESD <- function(fit, baseline = "pooled", std = FALSE) {
-  MNIeffect(fit, baseline, std, measure = "RESD")
+#' Root Average Squared Difference of Expected Responses
+#' 
+#' This function calculates the Root Expected Squared Difference (RESD) and Root 
+#' Total Expected Squared Difference (RTESD) of responses for linear common factor 
+#' models with (jointly) normally distributed factors. 
+#' The effect size dMACS (Nye & Drasgow, 2011) is equivalent to
+#' `RESD(fit, baseline = "my_ref", std = "pooled", include.sumscore = FALSE)`
+#' 
+#' @param fit A lavaan multigroup fit object 
+#' @param baseline Default `"pooled"` uses pooled intercepts and loadings 
+#' as global baseline responses. A single group lavaan `fit` object can 
+#' also be used to define global baseline responses. 
+#' For baseline responses defined by a reference group, 
+#' pass the name of the reference group as a string.
+#' @param std Default `FALSE`: report EAD in orginial metric. 
+#' Option `"global"`: report EAD in global/globally pooled SDs. 
+#' Option `"group"`: returns EAD in each group's respective SD.
+#' Option `"reference"`: report EAD in reference group's SD.
+#' Option `"pooled"`: report EAD in (reference-focal-)pooled SD.
+#' NOTE: total effects are ALWAYS standarized using global SDs
+#' for ANY option apart from `FALSE`!
+#' @param include.sumscore Default `TRUE`. 
+#' Additionally calculate group and across-group EAD effects for sumscores.  
+#' 
+#' @examples
+#' EAD(fit)
+#' EAD(fit, std = "global")
+#' EAD(fit, baseline = fit_global, std = "global") 
+#' EAD(fit, baseline = "Pasteur", std = "pooled", include.sumscore = FALSE)
+#' 
+#' @returns A dataframe of item-level and sumscore-level EAD group effects  
+#' and TEAD across-group effects in the original metric; for
+#' standardized effects SEAD and STEAD, use the optional argument `std`.
+#'  
+#' @export
+RESD <- function(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE) {
+  MNIeffect(fit, baseline, std, include.sumscore, measure = "RESD")
 }
