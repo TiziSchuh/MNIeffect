@@ -10,8 +10,8 @@ You can install the package as follows:
 remotes::install_github("TiziSchuh/MNIeffect")
 ```
 
-# Source Code for the Empirical Illustration in Schuhbeck et al. (2026)
+## Source Code for the Empirical Illustration in Schuhbeck et al. (2026)
 
-This repository also contains the source code for the illustration in:
+This repository also contains the source code (see `illustration/`) for the empirical illustration in:
 
 Schuhbeck, T. M. B., Partsch, M. V., Sterner, P., & Goretzko, D. (2026, August 6). Effect-Based Assessments of Intergroup Comparability – The Practical Impact of Measurement Non-Invariance & Differential Item Functioning on Psychological Tests and Scales. Retrieved from osf.io/preprints/psyarxiv/sjtp3_v2
