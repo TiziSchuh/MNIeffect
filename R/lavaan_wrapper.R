@@ -1,7 +1,24 @@
 source("R/FA_functions.R")
 
 
-MNIeffect <- function(fit, baseline, std = NULL, sumscore.include = TRUE, measure = "EAD") {
+# helper function
+get_sumscores <- function(fit) {
+  X <- lavInspect(fit, "data")
+  if (!is.list(X)) X <- list(X)
+  glabs <- lavInspect(fit, "group.label")
+  names(X) <- if (length(glabs)) glabs 
+
+  # all observed variables except covariates
+  items <- lavNames(fit, "ov.nox")   
+
+  lapply(X, function(M) {
+    M <- as.matrix(M)[, items, drop = FALSE]
+    rowSums(M[complete.cases(M), , drop = FALSE])        
+  })
+}
+
+
+MNIeffect <- function(fit, baseline, std = FALSE, sumscore.include = TRUE, measure = "EAD") {
   
   lambda <- lapply(lavInspect(fit, "est"), function(x) {unname(x$lambda)})
   nu <- lapply(lavInspect(fit, "est"), function(x) {unname(x$nu)})
@@ -16,7 +33,6 @@ MNIeffect <- function(fit, baseline, std = NULL, sumscore.include = TRUE, measur
 
   if (class(baseline) == "lavaan") {
     lambda_base <- lavTech(baseline, "est")$lambda
-    
     if (is.null(lavTech(baseline, "est")$nu)){
       stop("'meanstructure = TRUE' required in the baseline fit object")
     }
@@ -35,11 +51,55 @@ MNIeffect <- function(fit, baseline, std = NULL, sumscore.include = TRUE, measur
     nu_base <- unname(nu[baseline])[[1]]
   }
 
-  # ToDo: standardization
-  # cov <- lavTech(fitGlobal, "sampstat")[[1]]$cov
-  # sd <- sqrt(diag(cov))
 
-  
+  sd <- matrix(1, ngroups, nitems)
+  sd_sumscore <- rep(1, ngroups)
+
+  if (std == "global") {
+    if (class(baseline) == "lavaan") { 
+      sd_base <- sqrt(diag(lavTech(baseline, "sampstat")[[1]]$cov))
+      sd <- t(replicate(ngroups, sd_base))
+      sd_sumscore <- replicate(ngroups,sd(get_sumscores(baseline)[[1]]))
+    }
+    else {
+      sd_pool <- rep(0, nitems)
+      sd_sumscore_pool <- 0 
+      for (g in 1:ngroups) {
+        sd_pool <- sd_pool + (nobs[g]-1) * diag(lavTech(fit, "sampstat")[[g]]$cov)
+        sd_sumscore_pool <- sd_sumscore_pool + (nobs[g]-1) * (sd(get_sumscores(fit)[[g]])^2)
+      }
+      sd_pool <- sqrt(sd_pool/(sum(nobs)-ngroups))
+      sd_sumscore_pool <- sqrt(sd_sumscore_pool/(sum(nobs)-ngroups))
+      sd <- t(replicate(ngroups, sd_pool))
+      sd_sumscore <- replicate(ngroups, sd_sumscore_pool)
+    }
+  }
+  else if (std == "group") {
+    for (g in 1:ngroups) {
+      sd[g,] <- sqrt(diag(lavTech(fit, "sampstat")[[g]]$cov))
+      sd_sumscore[g] <- sd(get_sumscores(fit)[[g]])
+    }
+  }
+  else if (std == "reference") {
+    sd_ref <- sqrt(diag(lavTech(fit, "sampstat")[[baseline]]$cov))
+    sd <- t(replicate(ngroups, sd_ref))
+    sd_sumscore_ref <- sd(get_sumscores(fit)[[baseline]])
+    sd_sumscore <- replicate(ngroups, sd_sumscore_ref)
+  }
+  else if (std == "pooled") {
+    sd_ref <- sqrt(diag(lavTech(fit, "sampstat")[[baseline]]$cov))
+    sd_sumscore_ref <- sd(get_sumscores(fit)[[baseline]])
+    r <- match(baseline, lavInspect(fit, "group.label"))
+    for (g in 1:ngroups) {
+      sd[g,] <- (nobs[r]-1)*sd_ref + (nobs[g]-1)*diag(lavTech(fit, "sampstat")[[g]]$cov)
+      sd[g,] <- sqrt(sd[g,]/(nobs[g]+nobs[r]-2))
+      sd_sumscore[g] <- (nobs[r]-1)*sd_sumscore_ref + (nobs[g]-1)*(sd(get_sumscores(fit)[[g]])^2)
+      sd_sumscore[g] <- sqrt(sd_sumscore[g]/(nobs[g]+nobs[r]-2))
+    }
+  }
+
+
+
   effect <- matrix(0, ngroups, nitems)
   effect_total <- numeric(nitems)
   effect_sumscore <- matrix(0, ngroups, ncol = 1)
@@ -50,14 +110,14 @@ MNIeffect <- function(fit, baseline, std = NULL, sumscore.include = TRUE, measur
       for (g in 1:ngroups) {
         effect[g,i] <- EDitem(nu_base[i], lambda_base[i, ], 
                               nu[[g]][i], lambda[[g]][i, ], 
-                              alpha[[g]], psi[[g]])
+                              alpha[[g]], psi[[g]]) / sd[g,i]
         effect_total[i] <- effect_total[i] + p[g] * effect[g,i]
       }
     }
     for (g in 1:ngroups) {
       effect_sumscore[g] <- EDtest(nu_base, lambda_base, 
                                    nu[[g]], lambda[[g]], 
-                                   alpha[[g]], psi[[g]])
+                                   alpha[[g]], psi[[g]]) / sd_sumscore[g]
       effect_sumscore_total <- effect_sumscore_total + p[g] * effect_sumscore[g]
     }
   }
@@ -67,14 +127,14 @@ MNIeffect <- function(fit, baseline, std = NULL, sumscore.include = TRUE, measur
       for (g in 1:ngroups) {
         effect[g,i] <- EADitem(nu_base[i], lambda_base[i, ], 
                                nu[[g]][i], lambda[[g]][i, ], 
-                               alpha[[g]], psi[[g]])
+                               alpha[[g]], psi[[g]]) / sd[g,i]
         effect_total[i] <- effect_total[i] + p[g] * effect[g,i]
       }
     }
     for (g in 1:ngroups) {
       effect_sumscore[g] <- EADtest(nu_base, lambda_base, 
                                    nu[[g]], lambda[[g]], 
-                                   alpha[[g]], psi[[g]])
+                                   alpha[[g]], psi[[g]]) / sd_sumscore[g]
       effect_sumscore_total <- effect_sumscore_total + p[g] * effect_sumscore[g]
     }
   }
@@ -133,7 +193,7 @@ MNIeffect <- function(fit, baseline, std = NULL, sumscore.include = TRUE, measur
 
 
 
-#' Expected Difference
+#' Average Difference of Expected Responses
 #' 
 #' This function calculates the Expected Difference (ED) and Total Expected
 #' Difference (TED) of responses for linear common factor models with 
@@ -145,7 +205,11 @@ MNIeffect <- function(fit, baseline, std = NULL, sumscore.include = TRUE, measur
 #' also be used to define global baseline responses. 
 #' For baseline responses defined by a reference group, 
 #' pass the name of th reference group as a string.
-#' @param std Default `NULL`.   
+#' @param std Default `FALSE` returns ED in orginial metric. 
+#' Option `"global"` returns ED in global/globally pooled SDs. 
+#' Option `"group"` returns ED in respective group's SD.
+#' Option `"reference"` returns ED in reference group's SD.
+#' Option `"pooled"` returns ED in reference-focal-pooled SD.
 #' 
 #' @examples
 #' ED(fit, baseline = "pooled")
@@ -154,18 +218,24 @@ MNIeffect <- function(fit, baseline, std = NULL, sumscore.include = TRUE, measur
 #' 
 #' @returns All item-level values ED (for each group) and TED (across groups) 
 #' @export
-ED <- function(fit, baseline = "pooled", std = NULL) {
+ED <- function(fit, baseline = "pooled", std = FALSE) {
   MNIeffect(fit, baseline, std, measure = "ED")
 }
 
-EAD <- function(fit, baseline = "pooled", std = NULL) {
+EAD <- function(fit, baseline = "pooled", std = FALSE) {
   MNIeffect(fit, baseline, std, measure = "EAD")
 }
 
-ESD <- function(fit, baseline = "pooled", std = NULL) {
+MNIdir <- function(fit, baseline = "pooled") {
+  df <- ED(fit, baseline, std = FALSE) / EAD(fit, baseline, std = FALSE) 
+  df[is.na(df)] <- 0
+  df
+}
+
+ESD <- function(fit, baseline = "pooled", std = FALSE) {
   MNIeffect(fit, baseline, std, measure = "ESD")
 }
 
-RESD <- function(fit, baseline = "pooled", std = NULL) {
+RESD <- function(fit, baseline = "pooled", std = FALSE) {
   MNIeffect(fit, baseline, std, measure = "RESD")
 }
