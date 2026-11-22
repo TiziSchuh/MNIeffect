@@ -13,17 +13,19 @@ remotes::install_github("TiziSchuh/MNIeffect")
 
 ### Holzinger-Swineford Example 
 
+A table of standardized group (EAD) and across-group (TEAD) effect sizes of measurement non-invariance on both item- and sumscore-level,
+
 |            |   X1|   X2|   X3|   X4|   X5|   X6|   X7|   X8|   X9| Sumscore|
 |:-----------|----:|----:|----:|----:|----:|----:|----:|----:|----:|--------:|
 |Pasteur     | 0.00| 0.14| 0.23| 0.21| 0.28| 0.25| 0.23| 0.04| 0.05|     0.07|
 |Grant-White | 0.01| 0.12| 0.23| 0.23| 0.30| 0.27| 0.25| 0.04| 0.05|     0.07|
 |Total       | 0.00| 0.13| 0.23| 0.22| 0.29| 0.26| 0.24| 0.04| 0.05|     0.07|
 
-The above table is the output of:
+obtained by the code
 
 ```R
-library("lavaan")
-library("MNIeffect")
+# library("lavaan")
+# library("MNIeffect")
 
 model <- ' visual  =~ x1 + x2 + x3
            textual =~ x4 + x5 + x6
