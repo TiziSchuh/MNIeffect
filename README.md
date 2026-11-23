@@ -21,6 +21,7 @@ All functions in this package require a multigroup `lavaan` fit object to calcul
 
 ```R
 # library("lavaan")
+# library("MNIeffect")
 
 model <- ' visual  =~ x1 + x2 + x3
            textual =~ x4 + x5 + x6
@@ -37,8 +38,6 @@ _Note: The following tables were modified to display values rounded to two decim
 You can report _Cohen's-d_-like effect sizes of MNI as `EAD` in the metric of global (i.e., across-group pooled) standard deviations.
 
 ```R
-# library("MNIeffect")
- 
 > EAD(fit, std = "global")
               X1   X2   X3   X4   X5   X6   X7   X8   X9 Sumscore
 Pasteur     0.00 0.14 0.23 0.21 0.28 0.25 0.23 0.04 0.05     0.07
@@ -52,9 +51,7 @@ Total       0.00 0.13 0.23 0.22 0.29 0.26 0.24 0.04 0.05     0.07
 
 You can report corresponding effect directions using `MNIdir`.
 
-```R
-# library("MNIeffect")
- 
+```R 
 > MNIdir(fit)
                X1    X2    X3    X4    X5    X6    X7    X8    X9 Sumscore
 Pasteur      1.00 -0.64  0.94 -1.00 -1.00 -1.00  1.00  0.93  0.90    -0.88
@@ -71,8 +68,6 @@ Total        0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00     0.00
 The impact of MNI on observed means with respect to the baseline, in this case the group Paster, can be calculated using `ED`.  
 
 ```R
-# library("MNIeffect")
- 
 > ED(fit, baseline = "Pasteur")
                X1   X2    X3   X4   X5   X6    X7    X8    X9 Sumscore
 Pasteur      0.00 0.00  0.00 0.00 0.00 0.00  0.00  0.00  0.00     0.00
