@@ -18,11 +18,9 @@ _Note: Bug reports, suggestions and feedback are always welcome -> schuhbeck@psy
 Effects are calculated w.r.t. a global baseline (see, [Schuhbeck et al., 2026](https://doi.org/10.31234/osf.io/sjtp3_v2)) by default.
 
 
-## [^1] Code-Example: Holzinger-Swineford
+# Code Example: Holzinger-Swineford
 
-
-[^1]: The tables in the code example were modified to display values rounded to two decimal places for simplicity.
-
+_Note: The tables in this code example were modified to display values rounded to two decimal places for simplicity._
 
 All functions in this package require a multigroup `lavaan` fit object to calculate MNI effect sizes.
 
@@ -72,7 +70,7 @@ Total        0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00     0.00
 
 ### The Impact of MNI on Observed Means
 
-The impact of MNI on observed means with respect to the baseline, in this case the group Paster, can be calculated using `ED`.  
+The impact of MNI on observed means with respect to the baseline, in this case the group Paster, can be calculated using `ED`.
 
 ```R
 > ED(fit, baseline = "Pasteur")
