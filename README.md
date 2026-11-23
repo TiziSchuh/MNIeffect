@@ -88,7 +88,7 @@ In this sense, +0.79 points may be attributed to MNI in a scale-mean comparison 
 
 # References
 
-Schuhbeck, T. M. B., Partsch, M. V., Sterner, P., & Goretzko, D. (2026, August 6). Effect-Based Assessments of Intergroup Comparability – The Practical Impact of Measurement Non-Invariance & Differential Item Functioning on Psychological Tests and Scales. Retrieved from osf.io/preprints/psyarxiv/sjtp3_v2 [^2]
+Schuhbeck, T. M. B., Partsch, M. V., Sterner, P., & Goretzko, D. (2026, November 14). Effect-Based Assessments of Intergroup Comparability – The Practical Impact of Measurement Non-Invariance & Differential Item Functioning on Psychological Tests and Scales. Retrieved from osf.io/preprints/psyarxiv/sjtp3_v2 [^2]
 
 Schuhbeck, T. M. B., Sterner, P., & Goretzko, D. (2026). Quantifying Measurement Non-Invariance Beyond Simple Structure: The Closed Formulas of Universal Effect Size Measures for MI. Structural Equation Modeling: A Multidisciplinary Journal, 33(1), 81-88.
 
