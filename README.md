@@ -34,12 +34,12 @@ _Note: The following tables were modified to display values rounded to two decim
 
 ### Group & Across-Group Effects of MNI
 
-You can report _Cohen's-d_-like effect sizes of MNI using `EAD` with standardization enabled. 
+You can report _Cohen's-d_-like effect sizes of MNI as `EAD` in the metric of global (i.e., across-group pooled) standard deviations.
 
 ```R
 # library("MNIeffect")
  
-> EAD(fit, std = TRUE)
+> EAD(fit, std = "global")
               X1   X2   X3   X4   X5   X6   X7   X8   X9 Sumscore
 Pasteur     0.00 0.14 0.23 0.21 0.28 0.25 0.23 0.04 0.05     0.07
 Grant-White 0.01 0.12 0.23 0.23 0.30 0.27 0.25 0.04 0.05     0.07
