@@ -7,15 +7,6 @@ This package implemets the effect size measures of first-order Measurement Non-I
 remotes::install_github("TiziSchuh/MNIeffect")
 ```
 
-### Example output (_details below_)
-
-|            |   X1|   X2|   X3|   X4|   X5|   X6|   X7|   X8|   X9| Sumscore|
-|:-----------|----:|----:|----:|----:|----:|----:|----:|----:|----:|--------:|
-|Pasteur     | 0.00| 0.14| 0.23| 0.21| 0.28| 0.25| 0.23| 0.04| 0.05|     0.07|
-|Grant-White | 0.01| 0.12| 0.23| 0.23| 0.30| 0.27| 0.25| 0.04| 0.05|     0.07|
-|Total       | 0.00| 0.13| 0.23| 0.22| 0.29| 0.26| 0.24| 0.04| 0.05|     0.07|
-
-
 ### Main Functions
 
 * `EAD`: group and across-group MNI effect sizes on item/sumscore level
