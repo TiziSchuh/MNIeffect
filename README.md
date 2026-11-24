@@ -65,7 +65,7 @@ Total        0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00     0.00
 ```
 
 `+1.00` indicates systematically higher responses than the baseline.  
-` 0.00` indicates that the non-invariance cancels out completely w.r.t. the baseline.  
+` 0.00` indicates that the non-invariance cancels out overall w.r.t. the baseline.  
 `-1.00` indicates systematically lower responses than the baseline.
 
 ### The Impact of MNI on Observed Means
