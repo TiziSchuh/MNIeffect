@@ -9,20 +9,18 @@ remotes::install_github("TiziSchuh/MNIeffect")
 
 _Note: Bug reports, suggestions and feedback are always welcome -> schuhbeck@psych.uni-frankfurt.de_
 
-### Main Functions
+# Quick Overview
 
-* `EAD`: group and across-group MNI effect sizes on item/sumscore level
-* `MNIdir`: corresponding MNI effect directions
-* `ED`: the impact of MNI on observed item/sumscore means 
+All functions in this package require a multigroup `lavaan` fit object as their input and return a dataframe of non-invariance values relative to the chosen baseline (see documentation). 
+The main functions are:
+* `EAD` returns of group and across-group MNI effect sizes on item/sumscore level
+* `MNIdir` returns of corresponding MNI effect directions
+* `ED` returns of the impact of MNI on observed item/sumscore means
 
-Effects are calculated w.r.t. a global baseline (see, [Schuhbeck et al., 2026](https://doi.org/10.31234/osf.io/sjtp3_v2)) by default.
 
-
-# Code Example: Holzinger-Swineford
+## Code Example: Holzinger-Swineford
 
 _Note: The tables in this code example were modified to display values rounded to two decimal places for simplicity._
-
-All functions in this package require a multigroup `lavaan` fit object to calculate MNI effect sizes.
 
 ```R
 # library("lavaan")
@@ -35,6 +33,7 @@ model <- ' visual  =~ x1 + x2 + x3
 # estimate multigroup model 
 fit <- cfa(model, data = HolzingerSwineford1939, group = "school")
 ```
+
 
 ### Group & Across-Group Effects of MNI
 
@@ -84,11 +83,74 @@ Total       -0.01 0.10 -0.24 0.24 0.35 0.26 -0.25 -0.04 -0.04     0.38
 For instance: The Grant-White sumscore value `0.79` indicates that the (sumscore-)scale mean of Grant-White students is 0.79 points higher compared to a scenario in which they were to follow the baseline response behavior, i.e., in which the scale were to measure the latent trait exactly as it does for Pasteur students.
 In this sense, +0.79 points may be attributed to MNI in a scale-mean comparison x̄<sub>Grant-White</sub>-x̄<sub>Pasteur</sub>.
 
+
+# Documentation
+
+The package contains five functions: `ED`, `EAD`, `MNIdir` and (for taxonomic completeness) `ESD` and `RESD`.  
+All functions follow the same argument syntax with mandatory argument `fit`, a multigroup `lavaan` fit object.
+
+## The Functions
+
+```R 
+ED(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE)
+```
+returns the group effect **Expected Difference (ED)** and the across-group effect **Total Expected Difference (TED)** for item/sumscore responses.
+
+
+```R 
+EAD(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE)
+```
+returns the group effect **Expected Absolute Difference (EAD)** and the across-group effect **Total Expected Absolute Difference (TEAD)** for item/sumscore responses.
+
+```R 
+ESD(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE)
+```
+returns the group effect **Expected Squared Difference (ESD)** and the across-group effect **Total Expected Squared Difference (TESD)** for item/sumscore responses.
+
+```R 
+RESD(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE)
+```
+returns the group effect **Root Expected Squared Difference (RESD)** and the across-group effect **Root Total Expected Squared Difference (RTESD)** for item/sumscore responses.
+
+```R 
+MNIdir(fit, baseline = "pooled", include.sumscore = TRUE)
+```
+returns the **direction of** group and across-group **non-invariance** for item/sumscore responses.
+
+## Optional Argument `baseline`
+
+| Option                       |                                                                                |
+| ---------------------------- | ------------------------------------------------------------------------------ |
+| `baseline = "pooled"`        | Defines a global baseline by pooling intercepts and loadings across all groups |
+| `baseline = my_fit`          | Defines the baseline via a single-group `lavaan` fit object                    |
+| `baseline = "my_group_name"` | Defines a reference group baseline                                             |
+ 
+
+## Optional Argument `std`
+
+| Option                       |                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------- |
+| `std = FALSE`                | Return values in the orignial item/sumscore metric                                    |
+| `std = "global"`             | Return values in the metric of global (i.e., across-group-pooled) standard deviations |
+| `std = "group"`              | Return group-effects in the metric of the respective group's standard deviation       |
+| `std = "reference"`          | Return group-effects in the metric of the reference group's standard deviation        |
+| `std = "pooled"`             | Return group-effects in the metric of (group-reference-)pooled standard deviations    |
+
+For options `group`, `reference` and `pooled`, all across-group effects are reported in the metric of globally pooled standard deviations.  
+Option `pooled` may be suitable, for instance, if pairwise comparisons to the reference group constitute the quantities of interest.
+
+## Optional Argument `include.sumscore`
+
+| Option                       |                                                                                        |
+| ---------------------------- | -------------------------------------------------------------------------------------- |
+| `include.sumscore = TRUE`    | Return values for item AND sumscore responses                                          |
+| `include.sumscore = FALSE`   | Return values for item responses only                                                  |
+
 # References
 
-Schuhbeck, T. M. B., Partsch, M. V., Sterner, P., & Goretzko, D. (2026, November 14). Effect-Based Assessments of Intergroup Comparability – The Practical Impact of Measurement Non-Invariance & Differential Item Functioning on Psychological Tests and Scales. Retrieved from osf.io/preprints/psyarxiv/sjtp3_v2 [^2]
+Schuhbeck, T. M. B., Partsch, M. V., Sterner, P., & Goretzko, D. (2026a, November 14). Effect-Based Assessments of Intergroup Comparability – The Practical Impact of Measurement Non-Invariance & Differential Item Functioning on Psychological Tests and Scales. Retrieved from osf.io/preprints/psyarxiv/sjtp3_v2 [^2]
 
-Schuhbeck, T. M. B., Sterner, P., & Goretzko, D. (2026). Quantifying Measurement Non-Invariance Beyond Simple Structure: The Closed Formulas of Universal Effect Size Measures for MI. Structural Equation Modeling: A Multidisciplinary Journal, 33(1), 81-88.
+Schuhbeck, T. M. B., Sterner, P., & Goretzko, D. (2026b). Quantifying Measurement Non-Invariance Beyond Simple Structure: The Closed Formulas of Universal Effect Size Measures for MI. Structural Equation Modeling: A Multidisciplinary Journal, 33(1), 81-88.
 
 [^2]: The source code for the empirical illustration can be found in this repository under `illustration/`.
 
