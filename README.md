@@ -56,7 +56,7 @@ Total        0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00     0.00
 ```
 
 `+1.00` indicates systematically higher responses than the baseline.  
-` 0.00` indicates that the non-invariance cancels out overall w.r.t. the baseline.  
+` 0.00` indicates that the non-invariance (relative to the baseline) cancels out across latent levels.
 `-1.00` indicates systematically lower responses than the baseline.
 
 
