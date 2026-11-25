@@ -13,9 +13,9 @@ _Note: Bug reports, suggestions and feedback are always welcome -> schuhbeck@psy
 
 All functions in this package require a multigroup `lavaan` fit object as their input and return a dataframe of non-invariance values relative to the chosen baseline (see documentation). 
 The main functions are:
-* `EAD` returns of group and across-group MNI effect sizes on item/sumscore level
-* `MNIdir` returns of corresponding MNI effect directions
-* `ED` returns of the impact of MNI on observed item/sumscore means
+* `EAD` returns group and across-group MNI effect sizes on item/sumscore level
+* `MNIdir` returns corresponding MNI effect directions
+* `ED` returns impacts of MNI on observed item/sumscore means
 
 
 ## Code Example: Holzinger-Swineford
