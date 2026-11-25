@@ -13,14 +13,12 @@ _Note: Bug reports, suggestions and feedback are always welcome -> schuhbeck@psy
 
 All functions in this package require a multigroup `lavaan` fit object as their input and return a dataframe of non-invariance values relative to the chosen baseline (see documentation). 
 The main functions are:
-* `EAD` returns group and across-group MNI effect sizes on item/sumscore level
+* `EAD` returns _Cohen's-d_-like group and _Cohen's-f_-like across-group MNI effect sizes on item/sumscore level
 * `MNIdir` returns corresponding MNI effect directions
 * `ED` returns impacts of MNI on observed item/sumscore means
 
 
 ## Code Example: Holzinger-Swineford
-
-_Note: The tables in this code example were modified to display values rounded to two decimal places for simplicity._
 
 ```R
 # library("lavaan")
@@ -34,10 +32,7 @@ model <- ' visual  =~ x1 + x2 + x3
 fit <- cfa(model, data = HolzingerSwineford1939, group = "school")
 ```
 
-
-### Group & Across-Group Effects of MNI
-
-You can report _Cohen's-d_-like effect sizes of MNI as `EAD` in the metric of global (i.e., across-group pooled) standard deviations.
+_Note: The following tables were modified to display values rounded to two decimal places for simplicity._
 
 ```R
 > EAD(fit, std = "global")
@@ -50,9 +45,6 @@ Total       0.00 0.13 0.23 0.22 0.29 0.26 0.24 0.04 0.05     0.07
  
 `0.00` indicates measurement invariance; higher values indicate higher non-invariance.
 
-### MNI Effect Directions
-
-You can report corresponding effect directions using `MNIdir`.
 
 ```R 
 > MNIdir(fit)
@@ -67,9 +59,6 @@ Total        0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00     0.00
 ` 0.00` indicates that the non-invariance cancels out overall w.r.t. the baseline.  
 `-1.00` indicates systematically lower responses than the baseline.
 
-### The Impact of MNI on Observed Means
-
-The impact of MNI on observed means with respect to the baseline, in this case the group Paster, can be calculated using `ED`.
 
 ```R
 > ED(fit, baseline = "Pasteur")
@@ -89,7 +78,7 @@ In this sense, +0.79 points may be attributed to MNI in a scale-mean comparison 
 The package contains five functions: `ED`, `EAD`, `MNIdir` and (for taxonomic completeness) `ESD` and `RESD`.  
 All functions follow the same argument syntax with mandatory argument `fit`, a multigroup `lavaan` fit object.
 
-## The Functions
+## Functions
 
 ```R 
 ED(fit, baseline = "pooled", std = FALSE, include.sumscore = TRUE)
