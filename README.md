@@ -1,6 +1,6 @@
 # `MNIeffect` Package
 
-This package implements the effect size measures of first-order Measurement Non-Invariance (MNI) in [Schuhbeck et al. (2026)](https://doi.org/10.31234/osf.io/sjtp3_v2) for linear common factor models with (jointly) normally distributed factors. Installation using `remotes`:
+This package implements the effect size measures of first-order Measurement Non-Invariance (MNI) in [Schuhbeck et al. (2026a)](https://doi.org/10.31234/osf.io/sjtp3_v2) for linear common factor models with (jointly) normally distributed factors. Installation using `remotes`:
 
 ```R
 # install.packages("remotes")
