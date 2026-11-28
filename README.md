@@ -1,8 +1,4 @@
-<img align="right" src="tests/MNIeffect_v2.svg" width="80">
-
-# `MNIeffect` Package
-
-
+<h1><code>MNIeffect</code> Package <img align="right" src="tests/MNIeffect_v2.svg" width="90"></h1>
 
 This package implements the effect size measures of first-order Measurement Non-Invariance (MNI) in [Schuhbeck et al. (2026a)](https://doi.org/10.31234/osf.io/sjtp3_v2) for linear common factor models with (jointly) normally distributed factors. Installation using `remotes`:
 
