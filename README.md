@@ -1,4 +1,4 @@
-<img align="right" src="tests/MNIeffect_v2.svg" width="90">
+<img align="right" src="tests/MNIeffect_v2.svg" width="80">
 
 # `MNIeffect` Package
 
